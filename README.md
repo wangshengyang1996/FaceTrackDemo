@@ -62,5 +62,5 @@ FaceCameraHelper提供了相关回调和一些配置属性。
     public void setFaceRectThickness(int faceRectThickness) {
         this.faceRectThickness = faceRectThickness;
     }
-    
+//demo截图
 ![张学友](https://github.com/wangshengyang1996/FaceTrackDemo/blob/master/%E5%BC%A0%E5%AD%A6%E5%8F%8B.jpg)
