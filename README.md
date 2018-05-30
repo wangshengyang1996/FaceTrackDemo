@@ -1,0 +1,2 @@
+# FaceTrackDemo
+使用虹软的FreeSDK做了个打开相机跟踪人脸画框的demo，适配屏幕方向和相机的ID的变化。
