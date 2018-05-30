@@ -1,11 +1,12 @@
 # FaceTrackDemo
 使用虹软的FreeSDK做了个打开相机跟踪人脸画框的demo，适配屏幕方向和相机的ID的变化。
-1.FaceCameraHelper提供了相关回调和一些配置属性。
+FaceCameraHelper提供了相关回调和一些配置属性。
 
-//回调接口
 
+     /**
+     * 回调监听接口
+     */
 public interface FaceTrackListener {
-
         /**
          * 回传相机预览数据和人脸框位置
          *
