@@ -8,7 +8,7 @@ FaceCameraHelper提供了相关回调和一些配置属性。
          * 回传相机预览数据和人脸框位置
          *
          * @param nv21 相机预览数据
-         * @param ftFaceList 待处理的人脸列表
+         * @param ftFaceList 处理后的人脸列表
          */
         void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList);
 
@@ -31,7 +31,7 @@ FaceCameraHelper提供了相关回调和一些配置属性。
         /**
          * 根据自己的需要可以删除部分人脸，比如指定区域、留下最大人脸等
          *
-         * @param ftFaceList 人脸列表
+         * @param ftFaceList 待处理的人脸列表
          */
         void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList); 
      
