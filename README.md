@@ -35,7 +35,12 @@ FaceCameraHelper提供了相关回调和一些配置属性。
          */
         void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList); 
      
-        
+        /**
+         * 请求人脸特征后的回调
+         *
+         * @param frFace
+         */
+        void onFaceFeatureInfoGet(@Nullable AFR_FSDKFace frFace);
         
 //功能属性设置
 
@@ -124,6 +129,41 @@ FaceCameraHelper提供了相关回调和一些配置属性。
         }
 
         return newRect;
+    }
+
+//FR数据获取
+    /**
+     * 设置FR引擎
+     *
+     * @param frEngine
+     */
+    public void setFrEngine(AFR_FSDKEngine frEngine) {
+        this.frEngine = frEngine;
+    }
+    
+    /**
+     * 请求获取人脸特征数据，需要传入FR的参数，以下参数同 AFR_FSDKEngine.AFR_FSDK_ExtractFRFeature
+     *
+     * @param nv21  NV21格式的图像数据
+     * @param faceRect  人脸框
+     * @param width  图像宽度
+     * @param height  图像高度
+     * @param format  图像格式
+     * @param ori  人脸在图像中的朝向
+     */
+    public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori) {
+        if (faceTrackListener != null) {
+            if (frEngine != null)
+            {
+                faceRecognizeRunnableQueue.add(new FaceRecognizeRunnable(nv21, faceRect, width, height, format, ori));
+                while (faceRecognizeRunnableQueue.size() > 0) {
+                    FaceRecognizeRunnable faceRecognizeRunnable = faceRecognizeRunnableQueue.poll();
+                    executorService.execute(faceRecognizeRunnable);
+                }
+            }else {
+                faceTrackListener.onFail(new Exception("frEngine is null"));
+            }
+        }
     }
 
 //demo截图
