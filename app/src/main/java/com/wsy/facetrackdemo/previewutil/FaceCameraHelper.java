@@ -153,7 +153,6 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
                 faceTrackListener.onFail(new Exception("frEngine is null"));
             }
         }
-
     }
 
     private FaceTrackListener faceTrackListener;

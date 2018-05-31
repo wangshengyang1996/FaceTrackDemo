@@ -8,17 +8,17 @@ import android.hardware.Camera;
 
 class DrawUtil {
 
-    static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int screenWidth, int screenHeight, int cameraOri, int mCameraId) {
+    static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId) {
         if (rect == null) {
             return null;
         }
-        if (screenWidth < screenHeight) {
+        if (canvasWidth < canvasHeight) {
             int t = previewHeight;
             previewHeight = previewWidth;
             previewWidth = t;
         }
-        float horizontalRatio = (float) screenWidth / (float) previewWidth;
-        float verticalRatio = (float) screenHeight / (float) previewHeight;
+        float horizontalRatio = (float) canvasWidth / (float) previewWidth;
+        float verticalRatio = (float) canvasHeight / (float) previewHeight;
 
         rect.left *= horizontalRatio;
         rect.right *= horizontalRatio;
@@ -30,8 +30,8 @@ class DrawUtil {
         switch (cameraOri) {
             case 0:
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.left = screenWidth - rect.left;
-                    newRect.right = screenWidth - rect.right;
+                    newRect.left = canvasWidth - rect.left;
+                    newRect.right = canvasWidth - rect.right;
                 } else {
                     newRect.left = rect.left;
                     newRect.right = rect.right;
@@ -40,11 +40,11 @@ class DrawUtil {
                 newRect.bottom = rect.bottom;
                 break;
             case 90:
-                newRect.right = screenWidth - rect.top;
-                newRect.left = screenWidth - rect.bottom;
+                newRect.right = canvasWidth - rect.top;
+                newRect.left = canvasWidth - rect.bottom;
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.top = screenHeight - rect.left;
-                    newRect.bottom = screenHeight - rect.right;
+                    newRect.top = canvasHeight - rect.left;
+                    newRect.bottom = canvasHeight - rect.right;
                 } else {
                     newRect.top = rect.left;
                     newRect.bottom = rect.right;
@@ -55,12 +55,12 @@ class DrawUtil {
                     newRect.left = rect.left;
                     newRect.right = rect.right;
                 } else {
-                    newRect.left = screenWidth - rect.left;
-                    newRect.right = screenWidth - rect.right;
+                    newRect.left = canvasWidth - rect.left;
+                    newRect.right = canvasWidth - rect.right;
                 }
 
-                newRect.top = screenHeight - rect.top;
-                newRect.bottom = screenHeight - rect.bottom;
+                newRect.top = canvasHeight - rect.top;
+                newRect.bottom = canvasHeight - rect.bottom;
                 break;
             default:
                 break;
