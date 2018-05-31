@@ -59,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         surfaceViewRect = findViewById(R.id.surfaceview_rect);
         initEngine();
 
+        if (checkCameraPermission()) {
+            initCamera(surfaceViewPreview, surfaceViewRect, ftEngine);
+        }
     }
 
 
@@ -94,9 +97,11 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
 
     @Override
     public void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList) {
-        if (ftFaceList.size()>0&&previewSize!=null) {
-            faceCameraHelper.requestFaceFeature(nv21,ftFaceList.get(0).getRect(),previewSize.width,previewSize.height,AFR_FSDKEngine.CP_PAF_NV21,ftFaceList.get(0).getDegree());
-        }
+        Log.i(TAG, "onPreviewData: " + ftFaceList.size());
+        //请求获取人脸特征数据
+//        if (ftFaceList.size()>0&&previewSize!=null) {
+//            faceCameraHelper.requestFaceFeature(nv21,ftFaceList.get(0).getRect(),previewSize.width,previewSize.height,AFR_FSDKEngine.CP_PAF_NV21,ftFaceList.get(0).getDegree());
+//        }
     }
 
     @Override
@@ -156,17 +161,4 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         }
     }
 
-    @Override
-    protected void onPause() {
-        faceCameraHelper.stop();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (checkCameraPermission()) {
-            initCamera(surfaceViewPreview, surfaceViewRect, ftEngine);
-        }
-    }
 }
