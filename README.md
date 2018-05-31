@@ -68,6 +68,15 @@ FaceCameraHelper提供了相关回调和一些配置属性。
         this.faceRectThickness = faceRectThickness;
     }
     
+    /**
+     * 设置FR引擎
+     *
+     * @param frEngine
+     */
+    public void setFrEngine(AFR_FSDKEngine frEngine) {
+        this.frEngine = frEngine;
+    }
+    
 //根据屏幕方向和CameraID调整绘制的人脸框
 
     static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int screenWidth, int screenHeight, int cameraOri, int mCameraId) {
@@ -132,15 +141,7 @@ FaceCameraHelper提供了相关回调和一些配置属性。
     }
 
 //FR数据获取
-    /**
-     * 设置FR引擎
-     *
-     * @param frEngine
-     */
-    public void setFrEngine(AFR_FSDKEngine frEngine) {
-        this.frEngine = frEngine;
-    }
-    
+
     /**
      * 请求获取人脸特征数据，需要传入FR的参数，以下参数同 AFR_FSDKEngine.AFR_FSDK_ExtractFRFeature
      *
