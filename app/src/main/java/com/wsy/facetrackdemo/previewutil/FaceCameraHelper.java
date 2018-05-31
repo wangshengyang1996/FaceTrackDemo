@@ -16,6 +16,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.arcsoft.facerecognition.AFR_FSDKEngine;
+import com.arcsoft.facerecognition.AFR_FSDKFace;
 import com.arcsoft.facetracking.AFT_FSDKEngine;
 import com.arcsoft.facetracking.AFT_FSDKFace;
 
@@ -23,6 +25,9 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author wsy9057
@@ -33,6 +38,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     private Camera mCamera;
     private int mCameraId;
     private AFT_FSDKEngine ftEngine;
+    private AFR_FSDKEngine frEngine;
     private SurfaceView surfaceViewPreview, surfaceViewRect;
     private Activity activity;
     private Camera.Size previewSize;
@@ -42,12 +48,16 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     private int faceRectThickness = 5;
     private List<AFT_FSDKFace> ftFaceList = new ArrayList<>();
     private Integer specificCameraId = null;
+    private ExecutorService executorService;
+    private byte[] nv21Data;
+    private ArrayBlockingQueue<FaceRecognizeRunnable> faceRecognizeRunnableQueue = new ArrayBlockingQueue<FaceRecognizeRunnable>(10);
+
     public interface FaceTrackListener {
 
         /**
          * 回传相机预览数据和人脸框位置
          *
-         * @param nv21 相机预览数据
+         * @param nv21       相机预览数据
          * @param ftFaceList 待处理的人脸列表
          */
         void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList);
@@ -74,18 +84,28 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
          * @param ftFaceList 人脸列表
          */
         void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList);
+
+        /**
+         * 请求人脸特征后的回调
+         *
+         * @param frFace
+         */
+        void onFaceFeatureInfoGet(@Nullable AFR_FSDKFace frFace);
     }
 
     /**
      * 设置人脸框的颜色
+     *
      * @param faceRectColor 人脸框的颜色
      */
+
     public void setFaceRectColor(@ColorInt int faceRectColor) {
         this.faceRectColor = faceRectColor;
     }
 
     /**
      * 设置指定的相机ID
+     *
      * @param specificCameraId 指定的相机ID
      */
     public void setSpecificCameraId(int specificCameraId) {
@@ -94,10 +114,46 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
 
     /**
      * 设置绘制的人脸框宽度
-     * @param faceRectThickness  人脸框宽度
+     *
+     * @param faceRectThickness 人脸框宽度
      */
     public void setFaceRectThickness(int faceRectThickness) {
         this.faceRectThickness = faceRectThickness;
+    }
+
+    /**
+     * 设置FR引擎
+     *
+     * @param frEngine
+     */
+    public void setFrEngine(AFR_FSDKEngine frEngine) {
+        this.frEngine = frEngine;
+    }
+
+    /**
+     * 请求获取人脸特征数据，需要传入FR的参数，以下参数同 AFR_FSDKEngine.AFR_FSDK_ExtractFRFeature
+     *
+     * @param nv21  NV21格式的图像数据
+     * @param faceRect  人脸框
+     * @param width  图像宽度
+     * @param height  图像高度
+     * @param format  图像格式
+     * @param ori  人脸在图像中的朝向
+     */
+    public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori) {
+        if (faceTrackListener != null) {
+            if (frEngine != null)
+            {
+                faceRecognizeRunnableQueue.add(new FaceRecognizeRunnable(nv21, faceRect, width, height, format, ori));
+                while (faceRecognizeRunnableQueue.size() > 0) {
+                    FaceRecognizeRunnable faceRecognizeRunnable = faceRecognizeRunnableQueue.poll();
+                    executorService.execute(faceRecognizeRunnable);
+                }
+            }else {
+                faceTrackListener.onFail(new Exception("frEngine is null"));
+            }
+        }
+
     }
 
     private FaceTrackListener faceTrackListener;
@@ -128,6 +184,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
 
 
     public void start() {
+        executorService = Executors.newSingleThreadExecutor();
         //相机数量为2则打开1,1则打开0,相机ID 1为前置，0为后置
         mCameraId = Camera.getNumberOfCameras() - 1;
         if (specificCameraId != null) {
@@ -170,6 +227,12 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
         if (mCamera == null) {
             return;
         }
+        if (faceRecognizeRunnableQueue.size() > 0) {
+            faceRecognizeRunnableQueue.clear();
+        }
+        if (!executorService.isShutdown()) {
+            executorService.shutdown();
+        }
         mCamera.stopPreview();
         try {
             mCamera.setPreviewCallback(null);
@@ -187,7 +250,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
      * reverseLandscape 180
      * reversePortrait 90
      *
-     * @return  相机预览数据的展示旋转角度
+     * @return 相机预览数据的展示旋转角度
      */
     private int getCameraOri() {
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
@@ -247,7 +310,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
             faceTrackListener.adjustFaceRectList(ftFaceList);
             if (surfaceViewRect != null) {
                 Canvas canvas = surfaceViewRect.getHolder().lockCanvas();
-                if (canvas == null){
+                if (canvas == null) {
                     faceTrackListener.onFail(new Exception("can not get canvas of surfaceViewRect"));
                     return;
                 }
@@ -287,4 +350,37 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
         }
     };
 
+    public class FaceRecognizeRunnable implements Runnable {
+        private Rect faceRect;
+        private int width;
+        private int height;
+        private int format;
+        private int ori;
+
+        public FaceRecognizeRunnable(byte[] nv21, Rect faceRect, int width, int height, int format, int ori) {
+            if (nv21 != null && nv21.length != 0 && faceRect != null) {
+                nv21Data = new byte[nv21.length];
+                System.arraycopy(nv21, 0, nv21Data, 0, nv21.length);
+                this.faceRect = new Rect(faceRect);
+            }
+            this.width = width;
+            this.height = height;
+            this.format = format;
+            this.ori = ori;
+        }
+
+        @Override
+        public void run() {
+            if (frEngine != null && faceTrackListener != null) {
+                AFR_FSDKFace frFace = new AFR_FSDKFace();
+                int frCode = frEngine.AFR_FSDK_ExtractFRFeature(nv21Data, width, height, format, faceRect, ori, frFace).getCode();
+                if (frCode == 0) {
+                    faceTrackListener.onFaceFeatureInfoGet(frFace);
+                } else {
+                    faceTrackListener.onFaceFeatureInfoGet(null);
+                    faceTrackListener.onFail(new Exception("fr failed errorCode is " + frCode));
+                }
+            }
+        }
+    }
 }
