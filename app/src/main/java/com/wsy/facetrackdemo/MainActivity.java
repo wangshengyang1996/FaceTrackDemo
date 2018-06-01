@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
             frEngine.AFR_FSDK_FacePairMatching(firstFace,frFace,matching);
             Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace.getFeatureData().length +"   " + matching.getScore() + " " + requestId);
         }else {
-            Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace + " " + requestId);
+//            Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace + " " + requestId);
         }
 
     }
@@ -163,15 +163,5 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        faceCameraHelper.start();
-    }
 
-    @Override
-    protected void onStop() {
-        faceCameraHelper.stop();
-        super.onStop();
-    }
 }

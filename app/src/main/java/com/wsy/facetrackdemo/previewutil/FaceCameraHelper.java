@@ -149,10 +149,10 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
                 Log.i("wsy", "requestFaceFeature: " + requestId);
                 executor.execute(new FaceRecognizeRunnable(faceRect, width, height, format, ori, requestId));
             }
-//下面这个回调根据需求选择是否需要添加
-//            else if (frEngine!=null){
-//                faceTrackListener.onFaceFeatureInfoGet(null,requestId);
-//            }
+            //下面这个回调根据需求选择是否需要添加
+            else if (frEngine!=null){
+                faceTrackListener.onFaceFeatureInfoGet(null,requestId);
+            }
         }
     }
 
