@@ -4,12 +4,14 @@
 FaceCameraHelper提供了相关回调和一些配置属性。
 
 //FaceTrackListener回调接口
- 
+
+    public interface FaceTrackListener {
+
         /**
          * 回传相机预览数据和人脸框位置
          *
-         * @param nv21 相机预览数据
-         * @param ftFaceList 处理后的人脸列表
+         * @param nv21       相机预览数据
+         * @param ftFaceList 待处理的人脸列表
          */
         void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList);
 
@@ -32,16 +34,19 @@ FaceCameraHelper提供了相关回调和一些配置属性。
         /**
          * 根据自己的需要可以删除部分人脸，比如指定区域、留下最大人脸等
          *
-         * @param ftFaceList 待处理的人脸列表
+         * @param ftFaceList 人脸列表
          */
-        void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList); 
-     
+        void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList);
+
         /**
          * 请求人脸特征后的回调
          *
-         * @param frFace
+         * @param frFace  人脸特征数据
+         * @param requestId  请求码
          */
-        void onFaceFeatureInfoGet(@Nullable AFR_FSDKFace frFace);
+        void onFaceFeatureInfoGet(@Nullable AFR_FSDKFace frFace, Integer requestId);
+    }
+
         
 //功能属性设置
 
@@ -142,31 +147,31 @@ FaceCameraHelper提供了相关回调和一些配置属性。
     }
 
 //FR数据获取
-
     /**
      * 请求获取人脸特征数据，需要传入FR的参数，以下参数同 AFR_FSDKEngine.AFR_FSDK_ExtractFRFeature
      *
-     * @param nv21  NV21格式的图像数据
-     * @param faceRect  人脸框
-     * @param width  图像宽度
-     * @param height  图像高度
-     * @param format  图像格式
-     * @param ori  人脸在图像中的朝向
+     * @param nv21     NV21格式的图像数据
+     * @param faceRect 人脸框
+     * @param width    图像宽度
+     * @param height   图像高度
+     * @param format   图像格式
+     * @param ori      人脸在图像中的朝向
+     * @param requestId      请求人脸特征的请求码
      */
-    public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori) {
+    public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori, Integer requestId) {
         if (faceTrackListener != null) {
-            if (frEngine != null)
-            {
-                faceRecognizeRunnableQueue.add(new FaceRecognizeRunnable(nv21, faceRect, width, height, format, ori));
-                while (faceRecognizeRunnableQueue.size() > 0) {
-                    FaceRecognizeRunnable faceRecognizeRunnable = faceRecognizeRunnableQueue.poll();
-                    executorService.execute(faceRecognizeRunnable);
-                }
-            }else {
-                faceTrackListener.onFail(new Exception("frEngine is null"));
+            if (frEngine != null && nv21Data == null) {
+                nv21Data = new byte[nv21.length];
+                System.arraycopy(nv21, 0, nv21Data, 0, nv21.length);
+                executor.execute(new FaceRecognizeRunnable(faceRect, width, height, format, ori, requestId));
+            }
+            //下面这个回调根据需求选择是否需要添加
+            else if (frEngine!=null){
+                faceTrackListener.onFaceFeatureInfoGet(null,requestId);
             }
         }
     }
+
 
 //demo截图
 ![张学友](https://github.com/wangshengyang1996/FaceTrackDemo/blob/master/%E5%BC%A0%E5%AD%A6%E5%8F%8B.jpg)

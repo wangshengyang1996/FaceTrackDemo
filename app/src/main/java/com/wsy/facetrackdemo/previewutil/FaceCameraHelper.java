@@ -139,14 +139,13 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
      * @param height   图像高度
      * @param format   图像格式
      * @param ori      人脸在图像中的朝向
+     * @param requestId      请求人脸特征的请求码
      */
     public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori, Integer requestId) {
         if (faceTrackListener != null) {
             if (frEngine != null && nv21Data == null) {
                 nv21Data = new byte[nv21.length];
                 System.arraycopy(nv21, 0, nv21Data, 0, nv21.length);
-
-                Log.i("wsy", "requestFaceFeature: " + requestId);
                 executor.execute(new FaceRecognizeRunnable(faceRect, width, height, format, ori, requestId));
             }
             //下面这个回调根据需求选择是否需要添加
