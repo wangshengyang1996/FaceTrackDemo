@@ -1,5 +1,3 @@
-【bug提示】
-获取FR数据有点bug，还没改，有空再改
 
 # FaceTrackDemo
 使用虹软的FreeSDK做了个打开相机跟踪人脸画框的demo，适配屏幕方向和前后置相机。

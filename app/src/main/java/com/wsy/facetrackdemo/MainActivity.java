@@ -94,14 +94,14 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         super.onDestroy();
     }
 
-
+    int requestId = 0;
     @Override
     public void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList) {
         Log.i(TAG, "onPreviewData: " + ftFaceList.size());
         //请求获取人脸特征数据
-//        if (ftFaceList.size()>0&&previewSize!=null) {
-//            faceCameraHelper.requestFaceFeature(nv21,ftFaceList.get(0).getRect(),previewSize.width,previewSize.height,AFR_FSDKEngine.CP_PAF_NV21,ftFaceList.get(0).getDegree());
-//        }
+        if (ftFaceList.size()>0&&previewSize!=null) {
+            faceCameraHelper.requestFaceFeature(nv21,ftFaceList.get(0).getRect(),previewSize.width,previewSize.height,AFR_FSDKEngine.CP_PAF_NV21,ftFaceList.get(0).getDegree(),requestId++);
+        }
     }
 
     @Override
@@ -122,14 +122,16 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
     }
     AFR_FSDKFace firstFace;
     @Override
-    public void onFaceFeatureInfoGet(AFR_FSDKFace frFace) {
+    public void onFaceFeatureInfoGet(AFR_FSDKFace frFace,Integer requestId) {
         if (frFace != null) {
             if (firstFace == null){
                 firstFace = new AFR_FSDKFace(frFace);
             }
             AFR_FSDKMatching matching = new AFR_FSDKMatching();
             frEngine.AFR_FSDK_FacePairMatching(firstFace,frFace,matching);
-            Log.i(TAG, "onFaceFeatureInfoGet: " + frFace.getFeatureData().length +"   " + matching.getScore());
+            Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace.getFeatureData().length +"   " + matching.getScore() + " " + requestId);
+        }else {
+            Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace + " " + requestId);
         }
 
     }
@@ -161,4 +163,15 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        faceCameraHelper.start();
+    }
+
+    @Override
+    protected void onStop() {
+        faceCameraHelper.stop();
+        super.onStop();
+    }
 }

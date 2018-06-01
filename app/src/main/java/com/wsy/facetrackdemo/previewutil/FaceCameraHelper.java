@@ -12,6 +12,7 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,9 +48,8 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     private int faceRectThickness = 5;
     private List<AFT_FSDKFace> ftFaceList = new ArrayList<>();
     private Integer specificCameraId = null;
-    private ExecutorService executorService;
-    private byte[] nv21Data;
-    private ArrayBlockingQueue<FaceRecognizeRunnable> faceRecognizeRunnableQueue = new ArrayBlockingQueue<FaceRecognizeRunnable>(10);
+    private ExecutorService executor;
+    private volatile byte[] nv21Data;
 
     public interface FaceTrackListener {
 
@@ -88,9 +87,10 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
         /**
          * 请求人脸特征后的回调
          *
-         * @param frFace
+         * @param frFace  人脸特征数据
+         * @param requestId  请求码
          */
-        void onFaceFeatureInfoGet(@Nullable AFR_FSDKFace frFace);
+        void onFaceFeatureInfoGet(@Nullable AFR_FSDKFace frFace, Integer requestId);
     }
 
     /**
@@ -133,25 +133,26 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     /**
      * 请求获取人脸特征数据，需要传入FR的参数，以下参数同 AFR_FSDKEngine.AFR_FSDK_ExtractFRFeature
      *
-     * @param nv21  NV21格式的图像数据
-     * @param faceRect  人脸框
-     * @param width  图像宽度
-     * @param height  图像高度
-     * @param format  图像格式
-     * @param ori  人脸在图像中的朝向
+     * @param nv21     NV21格式的图像数据
+     * @param faceRect 人脸框
+     * @param width    图像宽度
+     * @param height   图像高度
+     * @param format   图像格式
+     * @param ori      人脸在图像中的朝向
      */
-    public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori) {
+    public void requestFaceFeature(byte[] nv21, Rect faceRect, int width, int height, int format, int ori, Integer requestId) {
         if (faceTrackListener != null) {
-            if (frEngine != null)
-            {
-                faceRecognizeRunnableQueue.add(new FaceRecognizeRunnable(nv21, faceRect, width, height, format, ori));
-                while (faceRecognizeRunnableQueue.size() > 0) {
-                    FaceRecognizeRunnable faceRecognizeRunnable = faceRecognizeRunnableQueue.poll();
-                    executorService.execute(faceRecognizeRunnable);
-                }
-            }else {
-                faceTrackListener.onFail(new Exception("frEngine is null"));
+            if (frEngine != null && nv21Data == null) {
+                nv21Data = new byte[nv21.length];
+                System.arraycopy(nv21, 0, nv21Data, 0, nv21.length);
+
+                Log.i("wsy", "requestFaceFeature: " + requestId);
+                executor.execute(new FaceRecognizeRunnable(faceRect, width, height, format, ori, requestId));
             }
+//下面这个回调根据需求选择是否需要添加
+//            else if (frEngine!=null){
+//                faceTrackListener.onFaceFeatureInfoGet(null,requestId);
+//            }
         }
     }
 
@@ -183,7 +184,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
 
 
     public void start() {
-        executorService = Executors.newSingleThreadExecutor();
+        executor = Executors.newSingleThreadExecutor();
         //相机数量为2则打开1,1则打开0,相机ID 1为前置，0为后置
         mCameraId = Camera.getNumberOfCameras() - 1;
         if (specificCameraId != null) {
@@ -223,14 +224,12 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     }
 
     public void stop() {
+        Log.i("wsy", "stop: ");
         if (mCamera == null) {
             return;
         }
-        if (faceRecognizeRunnableQueue.size() > 0) {
-            faceRecognizeRunnableQueue.clear();
-        }
-        if (!executorService.isShutdown()) {
-            executorService.shutdown();
+        if (!executor.isShutdown()) {
+            executor.shutdown();
         }
         mCamera.stopPreview();
         try {
@@ -316,7 +315,9 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
                 canvas.drawColor(0, PorterDuff.Mode.CLEAR);
                 if (ftFaceList.size() > 0) {
                     for (AFT_FSDKFace ftFace : ftFaceList) {
+                        Log.i("wsy", "onPreviewFrame: " + new Rect(ftFace.getRect()));
                         Rect adjustedRect = DrawUtil.adjustRect(new Rect(ftFace.getRect()), previewSize.width, previewSize.height, surfaceWidth, surfaceHeight, cameraOrientation, mCameraId);
+                        Log.i("wsy", "onPreviewFrame:adjustedRect " + adjustedRect.toString());
                         DrawUtil.drawFaceRect(canvas, adjustedRect, faceRectColor, faceRectThickness);
                     }
                 }
@@ -355,17 +356,16 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
         private int height;
         private int format;
         private int ori;
+        private Integer requestId;
 
-        public FaceRecognizeRunnable(byte[] nv21, Rect faceRect, int width, int height, int format, int ori) {
-            if (nv21 != null && nv21.length != 0 && faceRect != null) {
-                nv21Data = new byte[nv21.length];
-                System.arraycopy(nv21, 0, nv21Data, 0, nv21.length);
-                this.faceRect = new Rect(faceRect);
-            }
+        public FaceRecognizeRunnable(Rect faceRect, int width, int height, int format, int ori, Integer requestId) {
+
+            this.faceRect = new Rect(faceRect);
             this.width = width;
             this.height = height;
             this.format = format;
             this.ori = ori;
+            this.requestId = requestId;
         }
 
         @Override
@@ -374,11 +374,12 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
                 AFR_FSDKFace frFace = new AFR_FSDKFace();
                 int frCode = frEngine.AFR_FSDK_ExtractFRFeature(nv21Data, width, height, format, faceRect, ori, frFace).getCode();
                 if (frCode == 0) {
-                    faceTrackListener.onFaceFeatureInfoGet(frFace);
+                    faceTrackListener.onFaceFeatureInfoGet(frFace, requestId);
                 } else {
-                    faceTrackListener.onFaceFeatureInfoGet(null);
+                    faceTrackListener.onFaceFeatureInfoGet(null, requestId);
                     faceTrackListener.onFail(new Exception("fr failed errorCode is " + frCode));
                 }
+                nv21Data = null;
             }
         }
     }
