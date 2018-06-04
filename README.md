@@ -147,7 +147,8 @@ FaceCameraHelper提供了相关回调和一些配置属性。
     }
 
 
-    //FR数据获取
+//FR数据获取
+
     /**
      * 请求获取人脸特征数据，需要传入FR的参数，以下参数同 AFR_FSDKEngine.AFR_FSDK_ExtractFRFeature
      *
