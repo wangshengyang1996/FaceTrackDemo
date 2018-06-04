@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.wsy.facetrackdemo.MainActivity">
-
     <SurfaceView
         android:id="@+id/surfaceview_preview"
         android:layout_width="match_parent"

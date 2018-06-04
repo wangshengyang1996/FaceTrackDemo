@@ -7,7 +7,16 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 
 class DrawUtil {
-
+    /**
+     * @param rect          FT人脸框
+     * @param previewWidth  相机预览的宽度
+     * @param previewHeight 相机预览高度
+     * @param canvasWidth   画布的宽度
+     * @param canvasHeight  画布的高度
+     * @param cameraOri     相机预览方向
+     * @param mCameraId     相机ID
+     * @return
+     */
     static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId) {
         if (rect == null) {
             return null;
@@ -17,9 +26,16 @@ class DrawUtil {
             previewHeight = previewWidth;
             previewWidth = t;
         }
-        float horizontalRatio = (float) canvasWidth / (float) previewWidth;
-        float verticalRatio = (float) canvasHeight / (float) previewHeight;
 
+        float horizontalRatio;
+        float verticalRatio;
+        if (cameraOri == 0 || cameraOri == 180) {
+            horizontalRatio = (float) canvasWidth / (float) previewWidth;
+            verticalRatio = (float) canvasHeight / (float) previewHeight;
+        } else {
+            horizontalRatio = (float) canvasHeight / (float) previewHeight;
+            verticalRatio = (float) canvasWidth / (float) previewWidth;
+        }
         rect.left *= horizontalRatio;
         rect.right *= horizontalRatio;
         rect.top *= verticalRatio;

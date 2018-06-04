@@ -12,16 +12,13 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 import com.arcsoft.facerecognition.AFR_FSDKEngine;
 import com.arcsoft.facerecognition.AFR_FSDKFace;
 import com.arcsoft.facetracking.AFT_FSDKEngine;
 import com.arcsoft.facetracking.AFT_FSDKFace;
-
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -223,7 +220,6 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     }
 
     public void stop() {
-        Log.i("wsy", "stop: ");
         if (mCamera == null) {
             return;
         }
@@ -314,9 +310,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
                 canvas.drawColor(0, PorterDuff.Mode.CLEAR);
                 if (ftFaceList.size() > 0) {
                     for (AFT_FSDKFace ftFace : ftFaceList) {
-                        Log.i("wsy", "onPreviewFrame: " + new Rect(ftFace.getRect()));
                         Rect adjustedRect = DrawUtil.adjustRect(new Rect(ftFace.getRect()), previewSize.width, previewSize.height, surfaceWidth, surfaceHeight, cameraOrientation, mCameraId);
-                        Log.i("wsy", "onPreviewFrame:adjustedRect " + adjustedRect.toString());
                         DrawUtil.drawFaceRect(canvas, adjustedRect, faceRectColor, faceRectThickness);
                     }
                 }
