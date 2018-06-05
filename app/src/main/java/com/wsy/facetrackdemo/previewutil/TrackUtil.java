@@ -1,12 +1,13 @@
 package com.wsy.facetrackdemo.previewutil;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.hardware.Camera;
 
-class DrawUtil {
+class TrackUtil {
     /**
      * @param rect          FT人脸框
      * @param previewWidth  相机预览的宽度
@@ -85,7 +86,7 @@ class DrawUtil {
         return newRect;
     }
 
-    static void drawFaceRect(Canvas canvas, Rect rect, int color, int faceRectThickness) {
+    static void drawFaceRect(Canvas canvas, Rect rect, int color, int faceRectThickness,int trackId,String name) {
         if (canvas == null || rect == null) {
             return;
         }
@@ -107,5 +108,23 @@ class DrawUtil {
         mPath.lineTo(rect.left, rect.bottom);
         mPath.lineTo(rect.left, rect.bottom - rect.height() / 4);
         canvas.drawPath(mPath, paint);
+
+        paint.setTextSize(32);
+        canvas.drawText(name!=null?name:String.valueOf(trackId),rect.left,rect.bottom-50,paint);
+    }
+
+    static boolean isSameFace(float fSimilarity, Rect rect1, Rect rect2) {
+        int left = 0, top = 0, right = 0, bottom = 0;
+
+        left = Math.max(rect1.left, rect2.left);
+        top = Math.max(rect1.top, rect2.top);
+        right = Math.min(rect1.right, rect2.right);
+        bottom = Math.min(rect1.bottom, rect2.bottom);
+
+        return left < right
+                && top < bottom
+                && ((rect2.right - rect2.left) * (rect2.bottom - rect2.top)) * fSimilarity <= (right - left) * (bottom - top)
+                && ((rect1.right - rect1.left) * (rect1.bottom - rect1.top)) * fSimilarity <= (right - left) * (bottom - top);
+
     }
 }

@@ -24,10 +24,15 @@ import com.arcsoft.facerecognition.AFR_FSDKMatching;
 import com.arcsoft.facetracking.AFT_FSDKEngine;
 import com.arcsoft.facetracking.AFT_FSDKError;
 import com.arcsoft.facetracking.AFT_FSDKFace;
+import com.wsy.facetrackdemo.common.RequestFeatureStatus;
 import com.wsy.facetrackdemo.previewutil.FaceCameraHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class MainActivity extends AppCompatActivity implements FaceCameraHelper.FaceTrackListener {
     private static final String TAG = "MainActivity";
     private static final int ACTION_REQUEST_CAMERA = 0x0001;
@@ -38,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
     private AFT_FSDKError ftError;
     private AFR_FSDKError frError;
     private FaceCameraHelper faceCameraHelper;
-
+    private volatile ConcurrentHashMap<Integer, RequestFeatureStatus> requestFeatureStatusMap = new ConcurrentHashMap<>();
 
     private static final String APP_ID = "3jV31oGD5YcGBiM4PrCmV82drJSJ2YqFmfZi2WDm3RFp";
     private static final String FT_SDK_KEY = "9ZmfHG9Em8EUXJ5xNrMxv5K5Bc2RiLLYfK9MiqszyvDh";
@@ -95,15 +100,21 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         super.onDestroy();
     }
 
-    int requestId = 0;
     @Override
-    public void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList) {
-        Log.i(TAG, "onPreviewData: " + ftFaceList.size());
+    public void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList, List<Integer> trackIdList) {
         //请求获取人脸特征数据
-        if (ftFaceList.size()>0&&previewSize!=null) {
-            faceCameraHelper.requestFaceFeature(nv21,ftFaceList.get(0).getRect(),previewSize.width,previewSize.height,AFR_FSDKEngine.CP_PAF_NV21,ftFaceList.get(0).getDegree(),requestId++);
+        if (ftFaceList.size() > 0 && previewSize != null) {
+            for (int i = 0; i < ftFaceList.size(); i++) {
+                if (requestFeatureStatusMap.get(trackIdList.get(i)) == null
+                        || requestFeatureStatusMap.get(trackIdList.get(i)) == RequestFeatureStatus.FAILED) {
+                    faceCameraHelper.requestFaceFeature(nv21, ftFaceList.get(i).getRect(), previewSize.width, previewSize.height, AFR_FSDKEngine.CP_PAF_NV21, ftFaceList.get(i).getDegree(), trackIdList.get(i));
+                    requestFeatureStatusMap.put(trackIdList.get(i), RequestFeatureStatus.SEARCHING);
+                }
+                clearLeftFace(trackIdList);
+            }
         }
     }
+
 
     @Override
     public void onFail(Exception e) {
@@ -118,21 +129,27 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
     }
 
     @Override
-    public void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList) {
+    public void adjustFaceRectList(List<AFT_FSDKFace> ftFaceList, List<Integer> trackIdList) {
 
     }
+
     AFR_FSDKFace firstFace;
+
     @Override
-    public void onFaceFeatureInfoGet(AFR_FSDKFace frFace,Integer requestId) {
+    public void onFaceFeatureInfoGet(AFR_FSDKFace frFace, Integer requestId) {
+        //模拟网络搜索人脸是否成功
+        boolean success =new Random().nextBoolean();
         if (frFace != null) {
-            if (firstFace == null){
+            if (firstFace == null) {
                 firstFace = new AFR_FSDKFace(frFace);
             }
+            requestFeatureStatusMap.put(requestId, success ? RequestFeatureStatus.SUCCEED : RequestFeatureStatus.FAILED);
+            //模拟搜索成功后设置姓名
+            faceCameraHelper.putName(requestId, "requestId:" + requestId);
             AFR_FSDKMatching matching = new AFR_FSDKMatching();
-            frEngine.AFR_FSDK_FacePairMatching(firstFace,frFace,matching);
-            Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace.getFeatureData().length +"   " + matching.getScore() + " " + requestId);
-        }else {
-//            Log.i(TAG, "requestFaceFeature onFaceFeatureInfoGet: " + frFace + " " + requestId);
+            frEngine.AFR_FSDK_FacePairMatching(firstFace, frFace, matching);
+        } else {
+            requestFeatureStatusMap.put(requestId,RequestFeatureStatus.FAILED);
         }
 
     }
@@ -141,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         faceCameraHelper = new FaceCameraHelper(new WeakReference<Activity>(this), ftEngine);
         faceCameraHelper.setFaceRectColor(Color.YELLOW);
         faceCameraHelper.setFaceRectThickness(5);
+        faceCameraHelper.setSpecificCameraId(0);
         faceCameraHelper.init(surfaceViewPreview, surfaceViewRect);
         faceCameraHelper.setFaceTrackListener(this);
         faceCameraHelper.setFrEngine(frEngine);
@@ -156,13 +174,26 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
     }
 
     private void unInitEngine() {
-        if (ftError.getCode() == 0){
+        if (ftError.getCode() == 0) {
             ftEngine.AFT_FSDK_UninitialFaceEngine();
         }
-        if (frError.getCode() == 0){
+        if (frError.getCode() == 0) {
             frEngine.AFR_FSDK_UninitialEngine();
         }
     }
 
+    /**
+     * 删除已经离开的人脸
+     *
+     * @param trackIdList
+     */
+    private void clearLeftFace(List<Integer> trackIdList) {
+        Set<Integer> keySet = requestFeatureStatusMap.keySet();
+        for (Integer integer : keySet) {
+            if (!trackIdList.contains(integer)) {
+                requestFeatureStatusMap.remove(integer);
+            }
+        }
+    }
 
 }
