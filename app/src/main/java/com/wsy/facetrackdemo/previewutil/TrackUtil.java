@@ -47,8 +47,8 @@ class TrackUtil {
         switch (cameraOri) {
             case 0:
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.left = canvasWidth - rect.left;
-                    newRect.right = canvasWidth - rect.right;
+                    newRect.left = canvasWidth - rect.right;
+                    newRect.right = canvasWidth - rect.left;
                 } else {
                     newRect.left = rect.left;
                     newRect.right = rect.right;
@@ -60,33 +60,42 @@ class TrackUtil {
                 newRect.right = canvasWidth - rect.top;
                 newRect.left = canvasWidth - rect.bottom;
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.top = canvasHeight - rect.left;
-                    newRect.bottom = canvasHeight - rect.right;
+                    newRect.top = canvasHeight - rect.right;
+                    newRect.bottom = canvasHeight - rect.left;
                 } else {
                     newRect.top = rect.left;
                     newRect.bottom = rect.right;
                 }
                 break;
             case 180:
+                newRect.top = canvasHeight - rect.bottom;
+                newRect.bottom = canvasHeight - rect.top;
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                     newRect.left = rect.left;
                     newRect.right = rect.right;
                 } else {
-                    newRect.left = canvasWidth - rect.left;
-                    newRect.right = canvasWidth - rect.right;
+                    newRect.left = canvasWidth - rect.right;
+                    newRect.right = canvasWidth - rect.left;
                 }
-
-                newRect.top = canvasHeight - rect.top;
-                newRect.bottom = canvasHeight - rect.bottom;
+                break;
+            case 270:
+                newRect.left = rect.top;
+                newRect.right = rect.bottom;
+                if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    newRect.top = rect.left;
+                    newRect.bottom = rect.right;
+                } else {
+                    newRect.top = canvasHeight - rect.right;
+                    newRect.bottom = canvasHeight - rect.left;
+                }
                 break;
             default:
                 break;
         }
-
         return newRect;
     }
 
-    static void drawFaceRect(Canvas canvas, Rect rect, int color, int faceRectThickness,int trackId,String name) {
+    static void drawFaceRect(Canvas canvas, Rect rect, int color, int faceRectThickness, int trackId, String name) {
         if (canvas == null || rect == null) {
             return;
         }
@@ -109,8 +118,10 @@ class TrackUtil {
         mPath.lineTo(rect.left, rect.bottom - rect.height() / 4);
         canvas.drawPath(mPath, paint);
 
-        paint.setTextSize(32);
-        canvas.drawText(name!=null?name:String.valueOf(trackId),rect.left,rect.bottom-50,paint);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        paint.setStrokeWidth(2);
+        paint.setTextSize(rect.width() / 10);
+        canvas.drawText(name != null ? name : String.valueOf(trackId), rect.left, rect.top - 10, paint);
     }
 
     static boolean isSameFace(float fSimilarity, Rect rect1, Rect rect2) {

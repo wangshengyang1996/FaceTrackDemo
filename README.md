@@ -114,8 +114,8 @@ FaceCameraHelper提供了相关回调和一些配置属性。
         switch (cameraOri) {
             case 0:
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.left = canvasWidth - rect.left;
-                    newRect.right = canvasWidth - rect.right;
+                    newRect.left = canvasWidth - rect.right;
+                    newRect.right = canvasWidth - rect.left;
                 } else {
                     newRect.left = rect.left;
                     newRect.right = rect.right;
@@ -127,29 +127,38 @@ FaceCameraHelper提供了相关回调和一些配置属性。
                 newRect.right = canvasWidth - rect.top;
                 newRect.left = canvasWidth - rect.bottom;
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.top = canvasHeight - rect.left;
-                    newRect.bottom = canvasHeight - rect.right;
+                    newRect.top = canvasHeight - rect.right;
+                    newRect.bottom = canvasHeight - rect.left;
                 } else {
                     newRect.top = rect.left;
                     newRect.bottom = rect.right;
                 }
                 break;
             case 180:
+                newRect.top = canvasHeight - rect.bottom;
+                newRect.bottom = canvasHeight - rect.top;
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                     newRect.left = rect.left;
                     newRect.right = rect.right;
                 } else {
-                    newRect.left = canvasWidth - rect.left;
-                    newRect.right = canvasWidth - rect.right;
+                    newRect.left = canvasWidth - rect.right;
+                    newRect.right = canvasWidth - rect.left;
                 }
-
-                newRect.top = canvasHeight - rect.top;
-                newRect.bottom = canvasHeight - rect.bottom;
+                break;
+            case 270:
+                newRect.left = rect.top;
+                newRect.right = rect.bottom;
+                if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    newRect.top = rect.left;
+                    newRect.bottom = rect.right;
+                } else {
+                    newRect.top = canvasHeight - rect.right;
+                    newRect.bottom = canvasHeight - rect.left;
+                }
                 break;
             default:
                 break;
         }
-
         return newRect;
     }
 

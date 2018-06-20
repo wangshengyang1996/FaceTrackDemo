@@ -62,7 +62,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     private int currentTrackId = 0;
     private List<Integer> formerTrackIdList = new ArrayList<>();
     private List<Integer> currentTrackIdList = new ArrayList<>();
-    private ConcurrentHashMap<Integer, String> nameMap = new ConcurrentHashMap<Integer, String>();
+    private ConcurrentHashMap<Integer, String> nameMap = new ConcurrentHashMap<>();
     private List<Rect> formerFaceRectList = new ArrayList<>();
     private static final float SIMILARITY_RECT = 0.3f;
 
