@@ -47,10 +47,11 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
 
     /**
      * 替换为自己的APP_ID和KEY，若还是运行不了，可能是库的版本问题，还需要替换jar和so
+     * SDK申请地址：http://www.arcsoft.com.cn/ai/arcface.html
      */
-    private static final String APP_ID = "你申请的APP_ID";
-    private static final String FT_SDK_KEY = "你申请的FT_SDK_KEY";
-    private static final String FR_SDK_KEY = "你申请的FR_SDK_KEY";
+    private static final String APP_ID = "3jV31oGD5YcGBiM4PrCmV82drJSJ2YqFmfZi2WDm3RFp";
+    private static final String FT_SDK_KEY = "9ZmfHG9Em8EUXJ5xNrMxv5K5Bc2RiLLYfK9MiqszyvDh";
+    private static final String FR_SDK_KEY = "9ZmfHG9Em8EUXJ5xNrMxv5KZqD58ujRfAogS55ujkmKQ";
 
 
     @Override
