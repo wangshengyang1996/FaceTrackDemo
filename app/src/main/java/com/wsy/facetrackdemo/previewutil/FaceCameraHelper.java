@@ -222,7 +222,12 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPreviewFormat(ImageFormat.NV21);
             previewSize = getBestSupportedSize(parameters.getSupportedPreviewSizes(), metrics);
+            String focusMode = getBestSupportedFocusMode(parameters.getSupportedFocusModes());
+            if (focusMode!=null){
+                parameters.setFocusMode(focusMode);
+            }
             parameters.setPreviewSize(previewSize.width, previewSize.height);
+
             mCamera.setParameters(parameters);
             mCamera.setPreviewDisplay(surfaceViewPreview.getHolder());
             mCamera.setPreviewCallback(this);
@@ -308,6 +313,24 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
             }
         }
         return bestSize;
+    }
+
+    private String getBestSupportedFocusMode(List<String> focusModeList) {
+        if (focusModeList==null||focusModeList.size()==0){
+            return null;
+        }
+        if (focusModeList.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)){
+            return Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
+        } else if (focusModeList.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
+            return Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+        } else if (focusModeList.contains(Camera.Parameters.FOCUS_MODE_AUTO)){
+            return Camera.Parameters.FOCUS_MODE_AUTO;
+        } else if (focusModeList.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)){
+            return Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
+        } else{
+            return focusModeList.get(0);
+        }
+
     }
 
     @Override
@@ -455,9 +478,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     }
 
     public void putName(int trackId, String name) {
-        if (!nameMap.containsKey(trackId)) {
-            nameMap.put(trackId, name);
-        }
+        nameMap.put(trackId, name);
     }
 
     /**

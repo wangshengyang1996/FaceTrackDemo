@@ -133,21 +133,18 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
 
     }
 
-    AFR_FSDKFace firstFace;
 
     @Override
     public void onFaceFeatureInfoGet(AFR_FSDKFace frFace, Integer requestId) {
         //模拟网络搜索人脸是否成功
         boolean success =new Random().nextBoolean();
         if (frFace != null) {
-            if (firstFace == null) {
-                firstFace = new AFR_FSDKFace(frFace);
-            }
+
             requestFeatureStatusMap.put(requestId, success ? RequestFeatureStatus.SUCCEED : RequestFeatureStatus.FAILED);
             //模拟搜索成功后设置姓名
-            faceCameraHelper.putName(requestId, "requestId:" + requestId);
-            AFR_FSDKMatching matching = new AFR_FSDKMatching();
-            frEngine.AFR_FSDK_FacePairMatching(firstFace, frFace, matching);
+            if (success) {
+                faceCameraHelper.putName(requestId, "requestId:" + requestId);
+            }
         } else {
             requestFeatureStatusMap.put(requestId,RequestFeatureStatus.FAILED);
         }
@@ -159,9 +156,9 @@ public class MainActivity extends AppCompatActivity implements FaceCameraHelper.
         faceCameraHelper.setFaceRectColor(Color.YELLOW);
         faceCameraHelper.setFaceRectThickness(5);
         faceCameraHelper.setSpecificCameraId(0);
-        faceCameraHelper.init(surfaceViewPreview, surfaceViewRect);
         faceCameraHelper.setFaceTrackListener(this);
         faceCameraHelper.setFrEngine(frEngine);
+        faceCameraHelper.init(surfaceViewPreview, surfaceViewRect);
     }
 
     private void initEngine() {
