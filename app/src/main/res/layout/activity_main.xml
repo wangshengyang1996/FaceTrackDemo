@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.wsy.facetrackdemo.MainActivity">
-    <SurfaceView
-        android:id="@+id/surfaceview_preview"
+    <TextureView
+        android:id="@+id/textureview_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <SurfaceView
-        android:id="@+id/surfaceview_rect"
+    <com.wsy.facetrackdemo.customview.FaceRectView
+        android:id="@+id/facerect_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
