@@ -222,6 +222,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
     private int getCameraOri() {
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = rotation * 90;
+        //按照以下常量值的规律，degrees = rotation * 90
         switch (rotation) {
             case Surface.ROTATION_0:
                 degrees = 0;

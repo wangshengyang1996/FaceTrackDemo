@@ -161,16 +161,16 @@ public class MainActivity extends AppCompatActivity implements FaceTrackListener
         faceCameraHelper = new FaceCameraHelper.Builder()
                 .activity(this)
                 .specificCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT)
-                .isMirror(true)
-                .faceRectColor(Color.YELLOW)
-                .faceRectThickness(5)
-                .previewOn(previewView)
-                .faceTrackListener(this)
+                .isMirror(true) //是否镜像显示，只有TextureView支持此选项
+                .faceRectColor(Color.YELLOW)    // 人脸框颜色
+                .faceRectThickness(5)   //人脸框厚度
+                .previewOn(previewView) //预览画面显示控件，支持SurfaceView和TextureView
+                .faceTrackListener(this)    //监听回调设置
                 .frEngine(frEngine)
                 .ftEngine(ftEngine)
-                .faceRectView(faceRectView)
-                .frThreadNum(5)
-                .currentTrackId(1)
+                .faceRectView(faceRectView) //人脸框绘制的控件
+                .frThreadNum(5) //FR线程队列的数量
+                .currentTrackId(1)  // 设置一个初始的trackID,后续在此增加
                 .build();
         faceCameraHelper.init();
     }
