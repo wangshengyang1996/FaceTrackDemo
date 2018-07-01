@@ -215,7 +215,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
      * landscape 0
      * portrait 90
      * reverseLandscape 180
-     * reversePortrait 90
+     * reversePortrait 270
      *
      * @return 相机预览数据的展示旋转角度
      */
