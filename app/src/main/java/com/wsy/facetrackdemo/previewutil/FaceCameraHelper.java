@@ -184,7 +184,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
             if (faceTrackListener != null) {
                 faceTrackListener.onCameraOpened(mCamera);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (faceTrackListener != null) {
                 faceTrackListener.onFail(e);
             }
@@ -200,10 +200,11 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
         if (!executor.isShutdown()) {
             executor.shutdown();
         }
-        mCamera.stopPreview();
         try {
             mCamera.setPreviewCallback(null);
             mCamera.setPreviewDisplay(null);
+            mCamera.stopPreview();
+            mCamera.release();
             mCamera = null;
         } catch (IOException e) {
             e.printStackTrace();

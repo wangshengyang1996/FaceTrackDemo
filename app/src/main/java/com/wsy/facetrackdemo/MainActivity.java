@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MainActivity extends AppCompatActivity implements FaceTrackListener {
     private static final String TAG = "MainActivity";
-    private static final int ACTION_REQUEST_CAMERA = 0x0001;
+    private static final int ACTION_REQUEST_PERMISSIONS = 0x0001;
     private TextureView textureViewPreview;
     private FaceRectView faceRectView;
     private Camera.Size previewSize;
@@ -51,10 +51,15 @@ public class MainActivity extends AppCompatActivity implements FaceTrackListener
      * 替换为自己的APP_ID和KEY，若还是运行不了，可能是库的版本问题，还需要替换jar和so
      * SDK申请地址：http://www.arcsoft.com.cn/ai/arcface.html
      */
+
     private static final String APP_ID = "APP_ID";
     private static final String FT_SDK_KEY = "FT_SDK_KEY";
     private static final String FR_SDK_KEY = "FR_SDK_KEY";
 
+
+    private static final String[] NEEDED_PERMISSIONS = new String[]{
+            Manifest.permission.CAMERA
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,31 +76,35 @@ public class MainActivity extends AppCompatActivity implements FaceTrackListener
         faceRectView = findViewById(R.id.facerect_view);
         initEngine();
 
-        if (checkCameraPermission()) {
+        if (checkPermissions()) {
             initCamera(textureViewPreview, faceRectView, ftEngine);
         }
     }
 
-
-    private boolean checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, ACTION_REQUEST_CAMERA);
-            return false;
-        } else {
+    private boolean checkPermissions() {
+        for (int i = 0; i < NEEDED_PERMISSIONS.length; i++) {
+            if (ContextCompat.checkSelfPermission(this, NEEDED_PERMISSIONS[i]) != PackageManager.PERMISSION_GRANTED) {
+                break;
+            }
             return true;
         }
+        ActivityCompat.requestPermissions(this, NEEDED_PERMISSIONS, ACTION_REQUEST_PERMISSIONS);
+        return false;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == ACTION_REQUEST_CAMERA) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == ACTION_REQUEST_PERMISSIONS) {
+            boolean isAllGranted = true;
+            for (int grantResult : grantResults) {
+                isAllGranted &= (grantResult == PackageManager.PERMISSION_GRANTED);
+            }
+            if (isAllGranted) {
                 initCamera(textureViewPreview, faceRectView, ftEngine);
                 faceCameraHelper.start();
-
             } else {
-                Toast.makeText(this, "权限不足，相机打开失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "权限不足", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -108,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements FaceTrackListener
 
     @Override
     public void onPreviewData(byte[] nv21, List<AFT_FSDKFace> ftFaceList, List<Integer> trackIdList) {
+        Log.i(TAG, "onPreviewData: " + trackIdList.size());
         //请求获取人脸特征数据
         if (ftFaceList.size() > 0 && previewSize != null) {
             for (int i = 0; i < ftFaceList.size(); i++) {
