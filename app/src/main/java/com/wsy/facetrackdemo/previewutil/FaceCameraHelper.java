@@ -216,13 +216,14 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
      * landscape 0
      * portrait 90
      * reverseLandscape 180
-     * reversePortrait 90
+     * reversePortrait 270
      *
      * @return 相机预览数据的展示旋转角度
      */
     private int getCameraOri() {
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = rotation * 90;
+        //按照以下常量值的规律，degrees = rotation * 90
         switch (rotation) {
             case Surface.ROTATION_0:
                 degrees = 0;

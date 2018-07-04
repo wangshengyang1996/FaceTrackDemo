@@ -50,39 +50,20 @@ FaceCameraHelper提供了相关回调和一些配置属性。
         
 //功能属性设置
 
-    /**
-     * 设置人脸框的颜色
-     * @param faceRectColor 人脸框的颜色
-     */
-    public void setFaceRectColor(@ColorInt int faceRectColor) {
-        this.faceRectColor = faceRectColor;
-    }
-
-    /**
-     * 设置指定的相机ID
-     * @param specificCameraId 指定的相机ID
-     */
-    public void setSpecificCameraId(int specificCameraId) {
-        this.specificCameraId = specificCameraId;
-    }
-
-    /**
-     * 设置绘制的人脸框宽度
-     * @param faceRectThickness  人脸框宽度
-     */
-    public void setFaceRectThickness(int faceRectThickness) {
-        this.faceRectThickness = faceRectThickness;
-    }
-    
-    /**
-     * 设置FR引擎
-     *
-     * @param frEngine
-     */
-    public void setFrEngine(AFR_FSDKEngine frEngine) {
-        this.frEngine = frEngine;
-    }
-    
+    faceCameraHelper = new FaceCameraHelper.Builder()
+                    .activity(this)
+                    .specificCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT)
+                    .isMirror(true) //是否镜像显示，只有TextureView支持此选项
+                    .faceRectColor(Color.YELLOW)    // 人脸框颜色
+                    .faceRectThickness(5)   //人脸框厚度
+                    .previewOn(previewView) //预览画面显示控件，支持SurfaceView和TextureView
+                    .faceTrackListener(this)    //监听回调设置
+                    .frEngine(frEngine)
+                    .ftEngine(ftEngine)
+                    .faceRectView(faceRectView) //人脸框绘制的控件
+                    .frThreadNum(5) //FR线程队列的数量
+                    .currentTrackId(1)  // 设置一个初始的trackID,后续在此增加
+                    .build();
 //根据屏幕方向和CameraID调整绘制的人脸框
 
     static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId) {
