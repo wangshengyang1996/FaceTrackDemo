@@ -79,14 +79,14 @@ public class TrackUtil {
                 }
                 break;
             case 270:
-                newRect.left =  rect.top;
+                newRect.left = rect.top;
                 newRect.right = rect.bottom;
                 if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.top =  canvasHeight - rect.right;
-                    newRect.bottom =  canvasHeight - rect.left;
-                } else {
-                    newRect.top =  rect.left;
+                    newRect.top = rect.left;
                     newRect.bottom = rect.right;
+                } else {
+                    newRect.top = canvasHeight - rect.right;
+                    newRect.bottom = canvasHeight - rect.left;
                 }
                 break;
             default:

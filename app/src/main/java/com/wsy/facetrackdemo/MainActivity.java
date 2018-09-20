@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements FaceTrackListener
 
     /**
      * 替换为自己的APP_ID和KEY，若还是运行不了，可能是库的版本问题，还需要替换jar和so
-     * SDK申请地址：http://www.arcsoft.com.cn/ai/arcface.html
+     * SDK申请地址：https://ai.arcsoft.com.cn/product/arcface.html
      */
 
     private static final String APP_ID = "APP_ID";
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements FaceTrackListener
         faceCameraHelper = new FaceCameraHelper.Builder()
                 .activity(this)
                 .specificCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT)
-                .isMirror(true) //是否镜像显示，只有TextureView支持此选项
+                .isMirror(false) //是否镜像显示，只有TextureView支持此选项
                 .faceRectColor(Color.YELLOW)    // 人脸框颜色
                 .faceRectThickness(5)   //人脸框厚度
                 .previewOn(previewView) //预览画面显示控件，支持SurfaceView和TextureView
