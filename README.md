@@ -64,84 +64,99 @@ FaceCameraHelper提供了相关回调和一些配置属性。
                     .frThreadNum(5) //FR线程队列的数量
                     .currentTrackId(1)  // 设置一个初始的trackID,后续在此增加
                     .build();
+
 //根据屏幕方向和CameraID调整绘制的人脸框
-
-    static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId) {
-        if (rect == null) {
-            return null;
-        }
-        if (canvasWidth < canvasHeight) {
-            int t = previewHeight;
-            previewHeight = previewWidth;
-            previewWidth = t;
-        }
-
-        float horizontalRatio;
-        float verticalRatio;
-        if (cameraOri == 0 || cameraOri == 180) {
-            horizontalRatio = (float) canvasWidth / (float) previewWidth;
-            verticalRatio = (float) canvasHeight / (float) previewHeight;
-        } else {
-            horizontalRatio = (float) canvasHeight / (float) previewHeight;
-            verticalRatio = (float) canvasWidth / (float) previewWidth;
-        }
-        rect.left *= horizontalRatio;
-        rect.right *= horizontalRatio;
-        rect.top *= verticalRatio;
-        rect.bottom *= verticalRatio;
-
-        Rect newRect = new Rect();
-
-        switch (cameraOri) {
-            case 0:
-                if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.left = canvasWidth - rect.right;
-                    newRect.right = canvasWidth - rect.left;
-                } else {
-                    newRect.left = rect.left;
-                    newRect.right = rect.right;
-                }
-                newRect.top = rect.top;
-                newRect.bottom = rect.bottom;
-                break;
-            case 90:
-                newRect.right = canvasWidth - rect.top;
-                newRect.left = canvasWidth - rect.bottom;
-                if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.top = canvasHeight - rect.right;
-                    newRect.bottom = canvasHeight - rect.left;
-                } else {
-                    newRect.top = rect.left;
-                    newRect.bottom = rect.right;
-                }
-                break;
-            case 180:
-                newRect.top = canvasHeight - rect.bottom;
-                newRect.bottom = canvasHeight - rect.top;
-                if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.left = rect.left;
-                    newRect.right = rect.right;
-                } else {
-                    newRect.left = canvasWidth - rect.right;
-                    newRect.right = canvasWidth - rect.left;
-                }
-                break;
-            case 270:
-                newRect.left = rect.top;
-                newRect.right = rect.bottom;
-                if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    newRect.top = rect.left;
-                    newRect.bottom = rect.right;
-                } else {
-                    newRect.top = canvasHeight - rect.right;
-                    newRect.bottom = canvasHeight - rect.left;
-                }
-                break;
-            default:
-                break;
-        }
-        return newRect;
-    }
+       
+       /**
+          * @param ftRect          FT人脸框
+          * @param previewWidth  相机预览的宽度
+          * @param previewHeight 相机预览高度
+          * @param canvasWidth   画布的宽度
+          * @param canvasHeight  画布的高度
+          * @param cameraOri     相机预览方向
+          * @param mCameraId     相机ID
+          * @return
+          */
+         public static Rect adjustRect(Rect ftRect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId,boolean isMirror) {
+             if (ftRect == null) {
+                 return null;
+             }
+             Rect rect = new Rect(ftRect);
+             if (canvasWidth < canvasHeight) {
+                 int t = previewHeight;
+                 previewHeight = previewWidth;
+                 previewWidth = t;
+             }
+             float horizontalRatio;
+             float verticalRatio;
+             if (cameraOri == 0 || cameraOri == 180) {
+                 horizontalRatio = (float) canvasWidth / (float) previewWidth;
+                 verticalRatio = (float) canvasHeight / (float) previewHeight;
+             } else {
+                 horizontalRatio = (float) canvasHeight / (float) previewHeight;
+                 verticalRatio = (float) canvasWidth / (float) previewWidth;
+             }
+             rect.left *= horizontalRatio;
+             rect.right *= horizontalRatio;
+             rect.top *= verticalRatio;
+             rect.bottom *= verticalRatio;
+             Rect newRect = new Rect();
+             switch (cameraOri) {
+                 case 0:
+                     if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                         newRect.left = canvasWidth - rect.right;
+                         newRect.right = canvasWidth - rect.left;
+                     } else {
+                         newRect.left = rect.left;
+                         newRect.right = rect.right;
+                     }
+                     newRect.top = rect.top;
+                     newRect.bottom = rect.bottom;
+                     break;
+                 case 90:
+                     newRect.right = canvasWidth -  rect.top;
+                     newRect.left =  canvasWidth -  rect.bottom;
+                     if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                         newRect.top =  canvasHeight - rect.right;
+                         newRect.bottom = canvasHeight - rect.left;
+                     } else {
+                         newRect.top =  rect.left;
+                         newRect.bottom =  rect.right;
+                     }
+                     break;
+                 case 180:
+                     newRect.top = canvasHeight - rect.bottom;
+                     newRect.bottom = canvasHeight -  rect.top;
+                     if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                         newRect.left = rect.left;
+                         newRect.right = rect.right;
+                     } else {
+                         newRect.left = canvasWidth - rect.right;
+                         newRect.right = canvasWidth - rect.left;
+                     }
+                     break;
+                 case 270:
+                     newRect.left = rect.top;
+                     newRect.right = rect.bottom;
+                     if (mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                         newRect.top = rect.left;
+                         newRect.bottom = rect.right;
+                     } else {
+                         newRect.top = canvasHeight - rect.right;
+                         newRect.bottom = canvasHeight - rect.left;
+                     }
+                     break;
+                 default:
+                     break;
+             }
+             if (isMirror){
+                 int left = newRect.left;
+                 int right = newRect.right;
+                 newRect.left = canvasWidth - right;
+                 newRect.right = canvasWidth - left;
+             }
+             return newRect;
+         }
 
 
 //FR数据获取

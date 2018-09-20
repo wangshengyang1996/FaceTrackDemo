@@ -172,7 +172,17 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
             parameters.setPreviewFormat(ImageFormat.NV21);
             previewSize = getBestSupportedSize(parameters.getSupportedPreviewSizes(), metrics);
             parameters.setPreviewSize(previewSize.width, previewSize.height);
-
+            //对焦模式设置
+            List<String> supportedFocusModes = parameters.getSupportedFocusModes();
+            if (supportedFocusModes != null && supportedFocusModes.size() > 0) {
+                if (supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                } else if (supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+                } else if (supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                }
+            }
             mCamera.setParameters(parameters);
             if (previewView instanceof TextureView) {
                 mCamera.setPreviewTexture(((TextureView) previewView).getSurfaceTexture());

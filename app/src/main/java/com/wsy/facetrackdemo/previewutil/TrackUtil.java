@@ -12,7 +12,7 @@ import android.hardware.Camera;
 public class TrackUtil {
 
     /**
-     * @param rect          FT人脸框
+     * @param ftRect          FT人脸框
      * @param previewWidth  相机预览的宽度
      * @param previewHeight 相机预览高度
      * @param canvasWidth   画布的宽度
@@ -21,10 +21,11 @@ public class TrackUtil {
      * @param mCameraId     相机ID
      * @return
      */
-    public static Rect adjustRect(Rect rect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId,boolean isMirror) {
-        if (rect == null) {
+    public static Rect adjustRect(Rect ftRect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId,boolean isMirror) {
+        if (ftRect == null) {
             return null;
         }
+        Rect rect = new Rect(ftRect);
         if (canvasWidth < canvasHeight) {
             int t = previewHeight;
             previewHeight = previewWidth;
