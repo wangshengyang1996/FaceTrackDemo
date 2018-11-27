@@ -12,34 +12,36 @@ import android.hardware.Camera;
 public class TrackUtil {
 
     /**
-     * @param ftRect          FT人脸框
-     * @param previewWidth  相机预览的宽度
-     * @param previewHeight 相机预览高度
-     * @param canvasWidth   画布的宽度
-     * @param canvasHeight  画布的高度
-     * @param cameraOri     相机预览方向
-     * @param mCameraId     相机ID
+     * @param ftRect                    FT人脸框
+     * @param previewWidth              相机预览的宽度
+     * @param previewHeight             相机预览高度
+     * @param canvasWidth               画布的宽度
+     * @param canvasHeight              画布的高度
+     * @param cameraOri                 相机预览方向
+     * @param mCameraId                 相机ID
+     * @param isMirror                  是否水平镜像显示（若相机是镜像显示的，设为true，用于纠正）
+     * @param mirrorHorizontal          为兼容部分设备使用，水平再次镜像
+     * @param mirrorVertical            为兼容部分设备使用，垂直再次镜像
      * @return
      */
-    public static Rect adjustRect(Rect ftRect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId,boolean isMirror) {
+    public static Rect adjustRect(Rect ftRect, int previewWidth, int previewHeight, int canvasWidth, int canvasHeight, int cameraOri, int mCameraId,boolean isMirror,
+                                  boolean mirrorHorizontal,boolean mirrorVertical) {
         if (ftRect == null) {
             return null;
         }
         Rect rect = new Rect(ftRect);
-        if (canvasWidth < canvasHeight) {
-            int t = previewHeight;
-            previewHeight = previewWidth;
-            previewWidth = t;
-        }
+
         float horizontalRatio;
         float verticalRatio;
-        if (cameraOri == 0 || cameraOri == 180) {
+
+        if (cameraOri % 180 == 0) {
             horizontalRatio = (float) canvasWidth / (float) previewWidth;
             verticalRatio = (float) canvasHeight / (float) previewHeight;
         } else {
-            horizontalRatio = (float) canvasHeight / (float) previewHeight;
-            verticalRatio = (float) canvasWidth / (float) previewWidth;
+            horizontalRatio = (float) canvasHeight / (float) previewWidth;
+            verticalRatio = (float) canvasWidth / (float) previewHeight;
         }
+
         rect.left *= horizontalRatio;
         rect.right *= horizontalRatio;
         rect.top *= verticalRatio;
@@ -93,11 +95,26 @@ public class TrackUtil {
             default:
                 break;
         }
-        if (isMirror){
+        /**
+         * isMirror mirrorHorizontal finalIsMirrorHorizontal
+         * true         true                false
+         * false        false               false
+         * true         false               true
+         * false        true                true
+         *
+         * XOR
+         */
+        if (isMirror ^ mirrorHorizontal) {
             int left = newRect.left;
             int right = newRect.right;
             newRect.left = canvasWidth - right;
             newRect.right = canvasWidth - left;
+        }
+        if (mirrorVertical) {
+            int top = newRect.top;
+            int bottom = newRect.bottom;
+            newRect.top = canvasHeight - bottom;
+            newRect.bottom = canvasHeight - top;
         }
         return newRect;
     }

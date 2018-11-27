@@ -223,17 +223,12 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
 
     /**
      * 一般情况下
-     * landscape 0
-     * portrait 90
-     * reverseLandscape 180
-     * reversePortrait 270
      *
      * @return 相机预览数据的展示旋转角度
      */
     private int getCameraOri() {
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = rotation * 90;
-        //按照以下常量值的规律，degrees = rotation * 90
         switch (rotation) {
             case Surface.ROTATION_0:
                 degrees = 0;
@@ -293,7 +288,7 @@ public class FaceCameraHelper implements Camera.PreviewCallback {
                     faceRectView.clearFaceInfo();
                     if (ftFaceList.size() > 0) {
                         for (int i = 0; i < ftFaceList.size(); i++) {
-                            Rect adjustedRect = TrackUtil.adjustRect(new Rect(ftFaceList.get(i).getRect()), previewSize.width, previewSize.height, surfaceWidth, surfaceHeight, cameraOrientation, mCameraId, isMirror);
+                            Rect adjustedRect = TrackUtil.adjustRect(new Rect(ftFaceList.get(i).getRect()), previewSize.width, previewSize.height, surfaceWidth, surfaceHeight, cameraOrientation, mCameraId, isMirror,false,false);
                             faceRectView.addDrawInfo(new DrawInfo(adjustedRect, faceRectColor, faceRectThickness, currentTrackIdList.get(i), nameMap.get(currentTrackIdList.get(i))));
                         }
                     }
